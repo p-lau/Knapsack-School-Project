@@ -6,7 +6,20 @@
 # problem.
 from itertools import combinations
 from tkinter import *
-import subprocess as sub
+import ast
+
+with open('input.txt', 'r') as f:
+    # read = f.readlines(1)
+    # capacity = read
+    # weight = f.readlines(2)
+    x = f.read().splitlines()
+    capacity = ast.literal_eval(x[0])
+    weight = ast.literal_eval(x[1])
+    value = ast.literal_eval(x[2])
+    ranges = [x for x in range(len(weight)+1)]
+
+    inputSample = tuple(zip(ranges[1:], weight, value))
+    print(inputSample)
 
 sample1 = ((1, 3, 25), (2, 2, 20), (3, 1, 15), (4, 4, 40), (5, 5, 50))
 
@@ -29,9 +42,11 @@ def exhaustive(item, capacity):
 
     result = max(anycombination(item), key=totalvalue)  # max val or min wt if values are equal to each other
     print("Found items:\n  #" +
-          '\n  #'.join(sorted(str(x) for x, _, _ in result)))
+          '\n  #'.join(sorted(str(Item) for Item, _, _ in result)))
     val, wt = totalvalue(result)
     print("for a maximum of %i and a total weight of %i" % (val, -wt))
+
+exhaustive(inputSample, capacity)
 
 # Step 2. Code a DP method to find the optimal solution to the problem.
 
@@ -45,7 +60,7 @@ class KnapsackUI(Frame):
     def __init__(self, master):
         super().__init__(master)
         self.configure(bg="SkyBlue")
-        self.child_window = None
+        self.DialogText = None
         self.MainMenu()
 
     def MainMenu(self):
@@ -96,44 +111,25 @@ class KnapsackUI(Frame):
 
         self.OneAtATime(t)
 
-
     def Exhaustive(self):
-        self.t = Toplevel()
-        sys.stdout = self.t
-        self.t.title("Knapsack: Exhaustive Algorithm")
-        self.t.resizable(0,0)
-        self.t.config(bg="DarkSlateGrey")
+        t = Toplevel()
+        t.title("Knapsack: Exhaustive Algorithm")
+        t.resizable(0,0)
+        t.config(bg="DarkSlateGrey")
 
-        def Enter():
-            print(eval(self.t.entry.get()))
-            self.t.entry.delete(0, END)
+        t.Image = Label(t, image=ex, bg="DarkSlateGrey")
+        t.Image.pack(side="top")
+        t.Title = Label(t, text="Exhaustive", fg="MediumSpringGreen", bg="DarkSlateGrey")
+        self.Title(t.Title)
 
-        def write(txt):
-            self.t.text.insert(END,str(txt))
+        t.exit = Button(t, text="CLOSE", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=t.destroy)
+        self.expandBottom(t.exit)
+        t.enter = Button(t, text="START", fg="DarkSlateGrey", bg="Gold", activebackground="DarkSlateGrey", activeforeground="Gold")
+        self.expandBottom(t.enter)
+        t.load = Button(t, text="LOAD FILE", fg="DarkSlateGrey", bg="MediumSpringGreen", activebackground="DarkSlateGrey", activeforeground="MediumSpringGreen")
+        self.expandBottom(t.load)
 
-        self.t.Image = Label(self.t, image=ex, bg="DarkSlateGrey")
-        self.t.Image.pack(side="top")
-        self.t.Title = Label(self.t, text="Exhaustive", fg="MediumSpringGreen", bg="DarkSlateGrey")
-        self.Title(self.t.Title)
-
-        self.t.exit = Button(self.t, text="CLOSE", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=self.t.destroy)
-        self.expandBottom(self.t.exit)
-        self.t.enter = Button(self.t, text="START", fg="DarkSlateGrey", bg="Gold", activebackground="DarkSlateGrey", activeforeground="Gold", command=Enter)
-        self.expandBottom(self.t.enter)
-        self.t.load = Button(self.t, text="LOAD FILE", fg="DarkSlateGrey", bg="MediumSpringGreen", activebackground="DarkSlateGrey", activeforeground="MediumSpringGreen")
-        self.expandBottom(self.t.load)
-
-        self.t.entry = Entry(self.t, fg="DarkSlateGrey", bg="HoneyDew")
-        self.t.entry.config(font=("Consolas", 10), bd=0, width=47)
-        self.t.entry.pack(side="bottom", padx=0, pady=15)
-
-        self.t.text = Text(self.t, fg="DarkSlateGrey", bg="HoneyDew")
-        self.t.text.config(font=("Consolas", 10), bd=0, width=47, height=10)
-        self.t.text.pack(side="bottom", padx=0, pady=0)
-
-        self.OneAtATime(self.t)
-
-
+        self.OneAtATime(t)
 
     def normalButton(self, Button):
         self.x = Button
@@ -159,28 +155,6 @@ class KnapsackUI(Frame):
         t.transient(root)
         t.grab_set()
         root.wait_window(t)
-
-    # def displayList(self, Item):
-class Display(Frame):
-    """"" Demonstrate python interpreter output in Tkinter Text widget
-type python expression in the entry, hit DoIt and see the results
-in the text pane."""
-
-    def __init__(self,parent=0):
-       Frame.__init__(self,parent)
-       self.entry = Entry(self)
-       self.entry.pack()
-       self.doIt = Button(self,text="DoIt", command=self.onEnter)
-       self.doIt.pack()
-       self.output = Text(self)
-       self.output.pack()
-       sys.stdout = self
-       self.pack()
-
-    def onEnter(self, Entry):
-        print(eval(Entry.get()))
-
-
 
 
 root = Tk()
