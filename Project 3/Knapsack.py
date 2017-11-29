@@ -39,21 +39,36 @@ def ex(items, capacity):
 
 def dyn(items, capacity):
     K = [[0 for x in range(capacity + 1)] for x in range(len(items) + 1)]
-    wt = [items[i][1] for i in range(len(items))]
-    val = [items[i][2] for i in range(len(items))]
-    tw = 0
+    # wt = [items[i][1] for i in range(len(items))]
+    # val = [items[i][2] for i in range(len(items))]
+    # tw = 0
     # Build table K[][] in bottom up manner
     for i in range(len(items)+1):
+        _, wt, val = items[i-1]
         for w in range(capacity+1):
             if i==0 or w==0:
                 K[i][w] = 0
-            elif wt[i-1] <= w:
-                K[i][w] = max(val[i-1] + K[i-1][w-wt[i-1]],  K[i-1][w])
+            elif wt <= w:
+                K[i][w] = max(val + K[i-1][w-wt],  K[i-1][w])
 
             else:
                 K[i][w] = K[i-1][w]
 
-    return K[len(items)][capacity]
+    result = []
+    maxw = capacity
+    for j in range(len(items), 0, -1):
+        was_added = K[j][maxw] != K[j-1][maxw]
+
+        if was_added:
+            item, wt, val = items[j-1]
+            result.append(items[j-1])
+            maxw -= wt
+
+    val, wt = result
+    answer = ('\n\n Finished! The optimal set of items is/are:\n       Item ' +
+              '\n       Item '.join(sorted(str(result) for _, _ in result)) +
+              '\n for a maximum value of {} and a total weight of {}'.format(val, -wt))
+    return str(answer)
 
 # Step 3. Code your chosen method to find the optimal solution to the problem.
 
@@ -84,7 +99,7 @@ class KnapsackUI(Frame):
         self.q = Button(self, text="EXIT", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=root.destroy)
         self.h = Button(self, text="HELP", fg="DarkRed", bg="LightCoral", activebackground="DarkRed", activeforeground="LightCoral", command=self.tutorial)
         self.c = Button(self, text="RECURSION", fg="Sienna", bg="Wheat", activebackground="Sienna", activeforeground="Wheat")
-        self.DP = Button(self, text="DYNAMIC PROGRAMMING", fg="DarkSlateGray", bg="LightGreen", activebackground="DarkSlateGray", activeforeground="LightGreen")
+        self.DP = Button(self, text="DYNAMIC PROGRAMMING", fg="DarkSlateGray", bg="LightGreen", activebackground="DarkSlateGray", activeforeground="LightGreen", command=self.dp)
         self.ex = Button(self, text="EXHAUSTIVE", fg="DarkSlateGray", bg="MediumSpringGreen", activebackground="DarkSlateGray", activeforeground="MediumSpringGreen", command=self.exhaust)
         MainMenuButtons = [self.q, self.h, self.c, self.DP, self.ex]
 
@@ -152,6 +167,34 @@ class KnapsackUI(Frame):
 
         self.limitwindows(t)
 
+    def dp(self):
+        t = Toplevel()
+        t.title("Knapsack: Exhaustive Algorithm")
+        t.geometry(f'{int(width/2)}x{int(height/2)}')
+        t.resizable(0,0)
+        t.config(bg="DarkSlateGrey")
+        x = Text(t, fg="DarkSlateGrey", bg="Ivory")
+        t.Title = Label(t, text="Knapsack: Dynamic Programming", fg="MediumSpringGreen", bg="DarkSlateGrey")
+        self.Title(t.Title)
+
+        t.Frame = Frame(t)
+        t.Frame.pack(side="bottom", fill='x', expand=0)
+
+        t.Frame.load = Button(t.Frame, text="LOAD FILE", fg="DarkSlateGrey", bg="MediumSpringGreen",
+                              activebackground="DarkSlateGrey", activeforeground="MediumSpringGreen", command=lambda: self.updateSample(x))
+        self.normalButton(t.Frame.load)
+        t.Frame.enter = Button(t.Frame, text="START", fg="DarkSlateGrey", bg="Gold", activebackground="DarkSlateGrey", activeforeground="Gold"
+                               , command=lambda: self.calculateDP(x))
+        self.normalButton(t.Frame.enter)
+        t.Frame.exit = Button(t.Frame, text="EXIT", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=t.destroy)
+        self.normalButton(t.Frame.exit)
+
+        x.config(font=("Georgia", 12), bd=0, width=100, state="disabled")
+        x.pack(side="bottom", fill='both', expand='1', padx=10, pady=10)
+        self.textintro(x)
+
+        self.limitwindows(t)
+
     def textintro(self, text):
         self.DialogText = ""
         with open('CurrentSample.txt', 'r') as f:
@@ -184,6 +227,12 @@ class KnapsackUI(Frame):
         text.see(END)
         text.config(state='disabled')
 
+    def calculateDP(self, text):
+        self.DialogText = ""
+        text.config(state="normal")
+        text.insert(END, dyn(self.currentSample[0], self.currentSample[1]))
+        text.see(END)
+        text.config(state='disabled')
 
     def normalButton(self, Button):
         self.x = Button
