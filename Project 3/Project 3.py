@@ -8,10 +8,10 @@ from itertools import combinations
 from tkinter import *
 import ast
 
-sample1 = ((1, 3, 25), (2, 2, 20), (3, 1, 15), (4, 4, 40), (5, 5, 50))
+sample1 = (1, 3, 25), (2, 2, 20), (3, 1, 15), (4, 4, 40), (5, 5, 50)
 
 
-def exhaustive(item, capacity):
+def ex(items, capacity):
     def anycomb(x):
         """ return combinations of any length from the items """
         return (comb
@@ -27,7 +27,7 @@ def exhaustive(item, capacity):
             total_value += v
         return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
 
-    result = max(anycomb(item), key=totalvalue)  # max val or min wt if values are equal to each other
+    result = max(anycomb(items), key=totalvalue)  # max val or min wt if values are equal to each other
     val, wt = totalvalue(result)
     answer = ('\n\n Finished! The optimal set of items is/are:\n       Item ' +
               '\n       Item '.join(sorted(str(Item) for Item, _, _ in result)) +
@@ -35,6 +35,25 @@ def exhaustive(item, capacity):
     return str(answer)
 
 # Step 2. Code a DP method to find the optimal solution to the problem.
+
+
+def dyn(items, capacity):
+    K = [[0 for x in range(capacity + 1)] for x in range(len(items) + 1)]
+    wt = [items[i][1] for i in range(len(items))]
+    val = [items[i][2] for i in range(len(items))]
+    tw = 0
+    # Build table K[][] in bottom up manner
+    for i in range(len(items)+1):
+        for w in range(capacity+1):
+            if i==0 or w==0:
+                K[i][w] = 0
+            elif wt[i-1] <= w:
+                K[i][w] = max(val[i-1] + K[i-1][w-wt[i-1]],  K[i-1][w])
+
+            else:
+                K[i][w] = K[i-1][w]
+
+    return K[len(items)][capacity]
 
 # Step 3. Code your chosen method to find the optimal solution to the problem.
 
@@ -161,7 +180,7 @@ class KnapsackUI(Frame):
     def calculateExhaust(self, text):
         self.DialogText = ""
         text.config(state="normal")
-        text.insert(END, exhaustive(self.currentSample[0], self.currentSample[1]))
+        text.insert(END, ex(self.currentSample[0], self.currentSample[1]))
         text.see(END)
         text.config(state='disabled')
 
