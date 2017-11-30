@@ -5,6 +5,7 @@
 # Step 1. Code an exhaustive search algorithm to find the optimal solution to the above
 # problem.
 from itertools import combinations
+from time import clock
 from tkinter import filedialog
 from tkinter import *
 import ast
@@ -31,11 +32,15 @@ def ex(items, capacity):
             total_value += v
         return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
 
+    start = clock()
     result = max(anycomb(sortedbyratio), key=totalvalue)  # max val or min wt if values are equal to each other
+    end = (clock() - start)*1000
+
     val, wt = totalvalue(result)
-    answer = ('\n\n Finished! The optimal set of items is/are:\n\n       Item ' +
-              '\n\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
-              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt))
+    answer = ('\n\nThe optimal set of items is/are:\n\n       Item ' +
+              '\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
+              '\n\n for a maximum value of {} and a total weight of {}.'.format(val, -wt) +
+              f'\n\n It took {end} milliseconds to calculate the answer.')
 
     return str(answer)
 
@@ -76,12 +81,15 @@ def dyn(items, capacity):
             total_weight += w
             total_value += v
         return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
-
+    start = clock()
     result = dp()
+    end = (clock() - start)*1000
+
     val, wt = totalvalue(result)
-    answer = ('\n\n Finished! The optimal set of items is/are:\n\n       Item ' +
-              '\n\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
-              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt))
+    answer = ('\n\nThe optimal set of items is/are:\n\n       Item ' +
+              '\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
+              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt) +
+              f'\n\n It took {end} milliseconds to calculate the answer.')
     return str(answer)
 
 # Step 3. Code your chosen method to find the optimal solution to the problem.
@@ -114,12 +122,15 @@ def spec(items, capacity):
             total_weight += w
             total_value += v
         return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
+    start = clock()
     result = possiblesolution(result, sortedbyratio, 0)
+    end = (clock() - start)*1000
     val, wt = totalvalue(result)
-    answer = (f'{result}'
-              '\n\n Finished! The optimal set of items is/are:\n\n       Item ' +
-              '\n\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
-              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt))
+
+    answer = ('\n\nThe optimal set of items is/are:\n\n       Item ' +
+              '\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
+              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt) +
+              f'\n\n It took {end} milliseconds to calculate the answer.')
     return str(answer)
 
 
@@ -144,7 +155,7 @@ class KnapsackUI(Frame):
 
         self.q = Button(self, text="EXIT", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=root.destroy)
         self.h = Button(self, text="HELP", fg="DarkRed", bg="LightCoral", activebackground="DarkRed", activeforeground="LightCoral", command=self.tutorial)
-        self.c = Button(self, text="GREEDY ALGORITHM", fg="Sienna", bg="Wheat", activebackground="Sienna", activeforeground="Wheat", command=self.special)
+        self.c = Button(self, text="GREEDY ALGORITHM", fg="Sienna", bg="Gold", activebackground="Sienna", activeforeground="Gold", command=self.special)
         self.DP = Button(self, text="DYNAMIC PROGRAMMING", fg="DarkSlateGray", bg="LightGreen", activebackground="DarkSlateGray", activeforeground="LightGreen", command=self.dynamic)
         self.ex = Button(self, text="EXHAUSTIVE", fg="DarkSlateGray", bg="MediumSpringGreen", activebackground="DarkSlateGray", activeforeground="MediumSpringGreen", command=self.exhaust)
         MainMenuButtons = [self.q, self.h, self.c, self.DP, self.ex]
@@ -243,7 +254,7 @@ class KnapsackUI(Frame):
         t = Toplevel()
         t.title("Knapsack: Dynamic Programming")
         t.resizable(0,0)
-        t.config(bg="DarkSlateGrey")
+        t.config(bg="Sienna")
         x = Text(t, fg="DarkSlateGrey", bg="Ivory")
         t.Title = Label(t, text="Knapsack: Greedy Algorithm", fg="Wheat", bg="Sienna")
         self.Title(t.Title)
@@ -251,8 +262,8 @@ class KnapsackUI(Frame):
         t.Frame = Frame(t)
         t.Frame.pack(side="bottom", fill='x', expand=0)
 
-        t.Frame.load = Button(t.Frame, text="LOAD FILE", fg="DarkSlateGrey", bg="LightGreen",
-                              activebackground="DarkSlateGrey", activeforeground="LightGreen", command=lambda: self.updateSample(x))
+        t.Frame.load = Button(t.Frame, text="LOAD FILE", fg="Sienna", bg="Wheat",
+                              activebackground="Sienna", activeforeground="Wheat", command=lambda: self.updateSample(x))
         self.normalButton(t.Frame.load)
         t.Frame.enter = Button(t.Frame, text="START", fg="DarkSlateGrey", bg="Gold", activebackground="DarkSlateGrey", activeforeground="Gold"
                                , command=lambda: self.calculateSpec(x))
