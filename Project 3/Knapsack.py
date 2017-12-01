@@ -100,11 +100,15 @@ def spec(items, capacity):
     result = []
 
     def possiblesolution(comb, sorteditems, weight):
+        bestval = 0
         for i in sorteditems:
+            if i[2] > bestval:
+                bestval = i[2]
             if i[1] + weight == capacity:
-                weight += i[1]
-                comb.append(i)
-                return comb
+                if i[2] >= bestval:
+                    weight += i[1]
+                    comb.append(i)
+                    return comb
         if len(sorteditems) > 0:
             if sorteditems[0][1] + weight > capacity:
                 sorteditems.pop(0)
@@ -198,7 +202,7 @@ class KnapsackUI(Frame):
 
     def exhaust(self):
         t = Toplevel()
-        t.title("Knapsack: Exhaustive Algorithm")
+        t.title("The Knapsack: Exhaustive Algorithm")
         t.resizable(0,0)
         t.config(bg="DarkSlateGrey")
         x = Text(t, fg="DarkSlateGrey", bg="Ivory")
@@ -225,7 +229,7 @@ class KnapsackUI(Frame):
 
     def dynamic(self):
         t = Toplevel()
-        t.title("Knapsack: Dynamic Programming")
+        t.title("The Knapsack: Dynamic Programming")
         t.resizable(0,0)
         t.config(bg="DarkSlateGrey")
         x = Text(t, fg="DarkSlateGrey", bg="Ivory")
@@ -252,20 +256,20 @@ class KnapsackUI(Frame):
 
     def special(self):
         t = Toplevel()
-        t.title("Knapsack: Dynamic Programming")
+        t.title("The Knapsack: Greedy Algorithm")
         t.resizable(0,0)
-        t.config(bg="Sienna")
-        x = Text(t, fg="DarkSlateGrey", bg="Ivory")
-        t.Title = Label(t, text="Knapsack: Greedy Algorithm", fg="Wheat", bg="Sienna")
+        t.config(bg="gold")
+        x = Text(t, fg="Ivory", bg="MidnightBlue")
+        t.Title = Label(t, text="Knapsack: Greedy Algorithm", fg="sienna", bg="gold")
         self.Title(t.Title)
 
         t.Frame = Frame(t)
         t.Frame.pack(side="bottom", fill='x', expand=0)
 
-        t.Frame.load = Button(t.Frame, text="LOAD FILE", fg="Sienna", bg="Wheat",
-                              activebackground="Sienna", activeforeground="Wheat", command=lambda: self.updateSample(x))
+        t.Frame.load = Button(t.Frame, text="LOAD FILE", fg="gold", bg="sienna",
+                              activebackground="gold", activeforeground="sienna", command=lambda: self.updateSample(x))
         self.normalButton(t.Frame.load)
-        t.Frame.enter = Button(t.Frame, text="START", fg="DarkSlateGrey", bg="Gold", activebackground="DarkSlateGrey", activeforeground="Gold"
+        t.Frame.enter = Button(t.Frame, text="START", fg="gold", bg="DarkSlateGrey", activebackground="gold", activeforeground="DarkSlateGrey"
                                , command=lambda: self.calculateSpec(x))
         self.normalButton(t.Frame.enter)
         t.Frame.exit = Button(t.Frame, text="EXIT", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=t.destroy)
