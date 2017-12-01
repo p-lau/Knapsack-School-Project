@@ -48,41 +48,39 @@ def ex(items, capacity):
 
 
 def dyn(items, capacity):
-    K = [[0 for x in range(capacity + 1)] for x in range(len(items) + 1)]
+    def totalvalue(comb):
+        ' Totalise a particular combination of items'
+        totwt = totval = 0
+        for item, wt, val in comb:
+            totwt  += wt
+            totval += val
+        return (totval, -totwt) if totwt <= capacity else (0, 0)
 
-    def dp():
-        for i in range(len(items)+1):
-            _, wt, val = items[i-1]
-            for w in range(capacity+1):
-                if i==0 or w==0:
-                    K[i][w] = 0
-                elif wt <= w:
-                    K[i][w] = max(val + K[i-1][w-wt],  K[i-1][w])
+    def knapsack01_dp(items, limit):
+        table = [[0 for w in range(limit + 1)] for j in range(len(items) + 1)]
 
+        for j in range(1, len(items) + 1):
+            item, wt, val = items[j-1]
+            for w in range(1, limit + 1):
+                if wt > w:
+                    table[j][w] = table[j-1][w]
                 else:
-                    K[i][w] = K[i-1][w]
+                    table[j][w] = max(table[j-1][w],
+                                      table[j-1][w-wt] + val)
 
-        resultant = []
-        maxw = capacity
+        result = []
+        w = limit
         for j in range(len(items), 0, -1):
-            was_added = K[j][maxw] != K[j-1][maxw]
+            was_added = table[j][w] != table[j-1][w]
 
             if was_added:
                 item, wt, val = items[j-1]
-                resultant.append(items[j - 1])
-                maxw -= wt
+                result.append(items[j-1])
+                w -= wt
 
-        return resultant
-
-    def totalvalue(x):
-        """ Sums up a combination of items """
-        total_weight = total_value = 0
-        for i, w, v in x:
-            total_weight += w
-            total_value += v
-        return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
+        return result
     start = clock()
-    result = dp()
+    result = knapsack01_dp(items, capacity)
     end = (clock() - start)*1000
 
     val, wt = totalvalue(result)
@@ -99,26 +97,30 @@ def spec(items, capacity):
     sortedbyratio = sorted(items, key=lambda ii: ii[1]/ii[2])
     result = []
 
-    def possiblesolution(comb, sorteditems, weight):
-        bestval = 0
-        for i in sorteditems:
-            # if i[2] > bestval:
-            #     bestval = i[2]
-            if i[1] + weight == capacity:
-                #if i[2] >= bestval:
-                    weight += i[1]
-                    comb.append(i)
-                    return comb
-        if len(sorteditems) > 0:
-            if sorteditems[0][1] + weight > capacity:
-                sorteditems.pop(0)
-                return max((comb, possiblesolution(comb, sorteditems, weight)))
-            weight += sorteditems[0][1]
-            comb.append(sorteditems[0])
-            sorteditems.pop(0)
-        if len(sorteditems) == 0:
-            return comb
-        return max((comb, possiblesolution(comb, sorteditems, weight)))
+    # def possiblesolution(comb, sorteditems, weight):
+    #     bestval = 0
+    #     for i in sorteditems:
+    #         if i[2] > bestval:
+    #             bestval = i[2]
+    #         if i[1] + weight == capacity:
+    #             if i[2] >= bestval:
+    #                 weight += i[1]
+    #                 comb.append(i)
+    #                 return comb
+    #     if len(sorteditems) > 0:
+    #         if sorteditems[0][1] + weight > capacity:
+    #             sorteditems.pop(0)
+    #             return max((comb, possiblesolution(comb, sorteditems, weight)))
+    #         weight += sorteditems[0][1]
+    #         comb.append(sorteditems[0])
+    #         sorteditems.pop(0)
+    #     if len(sorteditems) == 0:
+    #         return comb
+    #     return max((comb, possiblesolution(comb, sorteditems, weight)))
+
+    def findComb:
+        for i in sortedbyratio:
+            if i
 
     def totalvalue(x):
         total_weight = total_value = 0
@@ -127,7 +129,6 @@ def spec(items, capacity):
             total_value += v
         return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
     start = clock()
-    result = possiblesolution(result, sortedbyratio, 0)
     end = (clock() - start)*1000
     val, wt = totalvalue(result)
 
