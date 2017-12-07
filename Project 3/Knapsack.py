@@ -1,7 +1,8 @@
 # Although you are given this small example, your code should be able to input a size n matrix
 # of weights and values and a knapsack size (read in a file). Here are the steps to complete
 # the project:
-#
+
+
 # Step 1. Code an exhaustive search algorithm to find the optimal solution to the above
 # problem.
 from itertools import combinations
@@ -25,21 +26,20 @@ def ex(items, capacity):
                 )
 
     def totalvalue(x):
-        """ Sums up a combination of items """
         total_weight = total_value = 0
         for i, w, v in x:
             total_weight += w
             total_value += v
-        return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
+        return (total_value, total_weight) if total_weight <= capacity else (0, 0)
 
     start = clock()
-    result = max(anycomb(sortedbyratio), key=totalvalue)  # max val or min wt if values are equal to each other
+    result = max(anycomb(sortedbyratio), key=totalvalue)
+    val, wt = totalvalue(result)
     end = (clock() - start)*1000
 
-    val, wt = totalvalue(result)
     answer = ('\n\nThe optimal set of items is/are:\n\n       Item ' +
               '\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
-              '\n\n for a maximum value of {} and a total weight of {}.'.format(val, -wt) +
+              '\n\n for a maximum value of {} and a total weight of {}.'.format(val, wt) +
               f'\n\n It took {end} milliseconds to calculate the answer.')
 
     return str(answer)
@@ -48,24 +48,26 @@ def ex(items, capacity):
 
 
 def dyn(items, capacity):
-    K = [[0 for x in range(capacity + 1)] for x in range(len(items) + 1)]
+    items = sorted(items, key=lambda ii: ii[1]/ii[2])
+    table = [[0 for i in range(capacity + 1)]
+         for i in range(len(items) + 1)]
 
     def dp():
         for i in range(len(items)+1):
             _, wt, val = items[i-1]
             for w in range(capacity+1):
-                if i==0 or w==0:
-                    K[i][w] = 0
+                if i == 0 or w == 0:
+                    table[i][w] = 0
                 elif wt <= w:
-                    K[i][w] = max(val + K[i-1][w-wt],  K[i-1][w])
+                    table[i][w] = max(val + table[i-1][w-wt],  table[i-1][w])
 
                 else:
-                    K[i][w] = K[i-1][w]
+                    table[i][w] = table[i-1][w]
 
         resultant = []
         maxw = capacity
         for j in range(len(items), 0, -1):
-            was_added = K[j][maxw] != K[j-1][maxw]
+            was_added = table[j][maxw] != table[j-1][maxw]
 
             if was_added:
                 item, wt, val = items[j-1]
@@ -80,15 +82,15 @@ def dyn(items, capacity):
         for i, w, v in x:
             total_weight += w
             total_value += v
-        return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
+        return (total_value, total_weight) if total_weight <= capacity else (0, 0)
     start = clock()
     result = dp()
+    val, wt = totalvalue(result)
     end = (clock() - start)*1000
 
-    val, wt = totalvalue(result)
     answer = ('\n\nThe optimal set of items is/are:\n\n       Item ' +
               '\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
-              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt) +
+              '\n\n for a maximum value of {} and a total weight of {}'.format(val, wt) +
               f'\n\n It took {end} milliseconds to calculate the answer.')
     return str(answer)
 
@@ -97,49 +99,84 @@ def dyn(items, capacity):
 
 def spec(items, capacity):
     sortedbyratio = sorted(items, key=lambda ii: ii[1]/ii[2])
-    result = []
+    table = [[0 for i in range(capacity + 1)] for i in range(len(items) + 1)]
+    comb= []
+    def dp():
+        for i in range(len(items)+1):
+            _, wt, val = items[i-1]
+            for w in range(capacity+1):
+                if i == 0 or w == 0:
+                    table[i][w] = 0
+                elif wt <= w:
+                    table[i][w] = max(val + table[i-1][w-wt],  table[i-1][w])
 
-    def possiblesolution(comb, sorteditems, weight):
-        bestval = 0
+                else:
+                    table[i][w] = table[i-1][w]
+
+        result = []
+        maxw = capacity
+        for j in range(len(items), 0, -1):
+            was_added = table[j][maxw] != table[j-1][maxw]
+
+            if was_added:
+                item, wt, val = items[j-1]
+                result.append(items[j - 1])
+                maxw -= wt
+
+        return result
+
+    def greedy(list, accumlist, weight, accum):
+
+        sorteditems = list
+        comb = accumlist
+        bestval = accum
         for i in sorteditems:
-            # if i[2] > bestval:
-            #     bestval = i[2]
+            if i[2] > bestval:
+                bestval = i[2]
             if i[1] + weight == capacity:
-                #if i[2] >= bestval:
+                if i[2] >= bestval:
                     weight += i[1]
                     comb.append(i)
                     return comb
         if len(sorteditems) > 0:
             if sorteditems[0][1] + weight > capacity:
                 sorteditems.pop(0)
-                return max((comb, possiblesolution(comb, sorteditems, weight)))
+                return max((comb, greedy(sorteditems, comb, weight, accum)), key=totalvalue)
             weight += sorteditems[0][1]
             comb.append(sorteditems[0])
             sorteditems.pop(0)
         if len(sorteditems) == 0:
             return comb
-        return max((comb, possiblesolution(comb, sorteditems, weight)))
+        result = max((comb, greedy(sortedbyratio, comb, weight, accum)))
+        return result
+
+    def combined():
+        result = max((comb, greedy(sortedbyratio, [], 0, 0)))
+        if len(sortedbyratio) == len(result):
+            return result
+        if totalvalue(result)[1] == capacity:
+            return result
+        else:
+            return dp()
 
     def totalvalue(x):
         total_weight = total_value = 0
         for i, w, v in x:
             total_weight += w
             total_value += v
-        return (total_value, -total_weight) if total_weight <= capacity else (0, 0)
+        return (total_value, total_weight) if total_weight <= capacity else (0, 0)
     start = clock()
-    result = possiblesolution(result, sortedbyratio, 0)
-    end = (clock() - start)*1000
+    result = combined()
     val, wt = totalvalue(result)
+    end = (clock() - start)*1000
 
     answer = ('\n\nThe optimal set of items is/are:\n\n       Item ' +
               '\n       Item '.join(sorted(str(Item) + ' has a weight of ' + str(v) + ' pounds and has a value of ' + str(x) for Item, v, x in result)) +
-              '\n\n for a maximum value of {} and a total weight of {}'.format(val, -wt) +
+              f'\n\n for a maximum value of {val} and a total weight of {wt}' +
               f'\n\n It took {end} milliseconds to calculate the answer.')
     return str(answer)
 
-
-# Step 4. Be sure to create a user friendly menu (no crashing and easy exit, read knapsack
-# data from a file).
+# Step 4. Be sure to create a user friendly menu (no crashing and easy exit, read knapsack data from a file).
 
 
 class KnapsackUI(Frame):
@@ -179,23 +216,36 @@ class KnapsackUI(Frame):
         t = Toplevel(self)
         t.title("Knapsack: Tutorial")
         t.resizable(0, 0)
+        t.config(bg="HoneyDew")
 
-        t.Title = Label(t, text="Sorry!", fg="Maroon", bg="HoneyDew")
+        t.Title = Label(t, text="Welcome!", fg="Maroon", bg="HoneyDew")
         self.Title(t.Title)
 
-        t.Body1 = Label(t, text="Exhaustive Algorithm", fg="Brown", bg="PapayaWhip")
+        t.intro = Label(t, text="I am Panhavuth Lau and this is my third project for CS2223.\n"
+                                " I sincerely hope you enjoy using my program!", fg="Maroon", bg="HoneyDew")
+        self.Body(t.intro)
+
+        t.Body1 = Label(t, text="Exhaustive Algorithm: This algorithm exhausts all possible combinations using powersets of n-sized items,\n"
+                                " and filters through the combinations whether they are equal or less than the maximum capacity.", fg="Brown", bg="PapayaWhip")
         self.Body(t.Body1)
 
-        t.Body2 = Label(t, text="Dynamic Programming Algorithm", fg="Maroon", bg="Wheat")
+        t.Body2 = Label(t, text="Dynamic Programming Algorithm: This algorithm aims to build a temporary array A[weight][value]\n"
+                                "from a bottom-up manner.", fg="Maroon", bg="Wheat")
         self.Body(t.Body2)
 
-        t.Body3 = Label(t, text="Recursion Algorithm", fg="MistyRose", bg="LightSalmon")
+        t.Body3 = Label(t, text="Greedy Algorithm: This custom-made algorithm sorts items by a value/weight ratio\n"
+                                "from highest to lowest. It aims to build one combination of items that can optimally fit\n"
+                                "in the Knapsack in a top-down manner. If, should this fail to cover the maximum capacity\n"
+                                "completely, it will use the second-most fastest algorithm to double check its answer.", fg="MistyRose", bg="LightSalmon")
         self.Body(t.Body3)
 
-        t.Body4 = Label(t, text="Navigation", fg="MistyRose", bg="LightCoral")
+        t.Body4 = Label(t, text="Navigation: Buttons are always at the bottom. Info can be seen in the interface of each\n"
+                                "sub menu (there are three sub-menus: Exhaustive, Dynamic Programming, and Greedy Algorithm)\n"
+                                "\n"
+                                "If you want to see the help text for the algorithms again, exit the window and reselect the submenu", fg="MistyRose", bg="LightCoral")
         self.Body(t.Body4)
 
-        t.exit = Button(t, text="THANKS", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=t.destroy)
+        t.exit = Button(t, text="EXIT", fg="GhostWhite", bg="Crimson", activebackground="GhostWhite", activeforeground="Crimson", command=t.destroy)
         self.expandBottom(t.exit)
 
         self.limitwindows(t)
@@ -203,7 +253,7 @@ class KnapsackUI(Frame):
     def exhaust(self):
         t = Toplevel()
         t.title("The Knapsack: Exhaustive Algorithm")
-        t.resizable(0,0)
+        t.resizable(0, 0)
         t.config(bg="DarkSlateGrey")
         x = Text(t, fg="DarkSlateGrey", bg="Ivory")
         t.Title = Label(t, text="Knapsack: Exhaustive Algorithm", fg="MediumSpringGreen", bg="DarkSlateGrey")
@@ -256,10 +306,10 @@ class KnapsackUI(Frame):
 
     def special(self):
         t = Toplevel()
-        t.title("The Knapsack: Greedy Algorithm")
+        t.title("The Knapsack: Greedy Top and Bottom Algorithm")
         t.resizable(0,0)
         t.config(bg="gold")
-        x = Text(t, fg="Ivory", bg="MidnightBlue")
+        x = Text(t, fg="MidnightBlue", bg="Ivory")
         t.Title = Label(t, text="Knapsack: Greedy Algorithm", fg="sienna", bg="gold")
         self.Title(t.Title)
 
@@ -310,7 +360,7 @@ class KnapsackUI(Frame):
         self.currentSample = [self.inputSample, self.inputCap]
         self.DialogText = ""
         text.config(state="normal")
-        text.insert(END, '\n\n########################################################################################################'
+        text.insert(END, '\n\n################################################################################################'
                          '\n\nThe sample has been updated.'
                          '\n    Here are the new item(s):')
         x = self.currentSample

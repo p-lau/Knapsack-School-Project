@@ -1,13 +1,18 @@
 Please scroll down for more info.
 
+Buttons are shown:
+
 [LOAD]
-Load in the input.txt file with the desired sample of items to test with the chosen algorithm.
+Explanation:
+Load in the desired .txt file with the desired sample of items to test with the chosen algorithm.
 <<CAUTION>>: This will overwrite the current sample of items.
 
 [START]
+Explanation:
 Activates the current sample into the algorithm to provide the optimal solution
 
 [EXIT]
-Closes the current window
+Explanation:
+Closes the current window.
 
 The current sample being used is:
